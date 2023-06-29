@@ -1,5 +1,6 @@
 package ru.practicum.shareit.user;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Repository;
 import ru.practicum.shareit.exceptions.UserAlreadyExistsException;
 import ru.practicum.shareit.exceptions.NotFoundException;
@@ -37,10 +38,10 @@ public class UserRepositoryImpl implements UserRepository {
         if (!Objects.equals(user.getEmail(), oldUser.getEmail())) {
             checkSameEmail(user);
         }
-        if (user.getName() != null && !user.getName().isBlank()) {
+        if (StringUtils.isNotBlank(user.getName())) {
             oldUser.setName(user.getName());
         }
-        if (user.getEmail() != null && !user.getEmail().isBlank()) {
+        if (StringUtils.isNotBlank(user.getEmail())) {
             oldUser.setEmail(user.getEmail());
         }
         users.remove(id);

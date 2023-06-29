@@ -66,13 +66,9 @@ public class ItemServiceImpl implements ItemService {
     }
 
     private Item fillItemFields(Item item, ItemDto itemDto) {
-        String itemName = itemDto.getName();
-        String itemDescription = itemDto.getDescription();
-        Boolean itemIsAvailable = itemDto.getAvailable();
-
-        Optional.ofNullable(itemName).ifPresent(item1 -> item.setName(itemName));
-        Optional.ofNullable(itemDescription).ifPresent(item1 -> item.setDescription(itemDescription));
-        Optional.ofNullable(itemIsAvailable).ifPresent(item1 -> item.setAvailable(itemIsAvailable));
+        Optional.ofNullable(itemDto.getName()).ifPresent(item::setName);
+        Optional.ofNullable(itemDto.getDescription()).ifPresent(item::setDescription);
+        Optional.ofNullable(itemDto.getAvailable()).ifPresent(item::setAvailable);
         return item;
     }
 
