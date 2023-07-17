@@ -30,6 +30,7 @@ public class BookingServiceImpl implements BookingService {
     private final UserRepository userRepository;
     private final ItemRepository itemRepository;
     private final UserServiceImpl userService;
+
     @Transactional
     @Override
     public BookingOutputDto createBooking(BookingDto dto, Long userId) {
