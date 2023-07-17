@@ -29,6 +29,7 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException((String.format("Пользователь с id=%d не найден", userId))));
         return ObjectMapper.toUserDto(user);
+
     }
 
     @Override
