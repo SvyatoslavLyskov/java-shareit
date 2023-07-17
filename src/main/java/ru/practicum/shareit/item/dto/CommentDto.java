@@ -6,19 +6,16 @@ import lombok.Data;
 import lombok.experimental.FieldDefaults;
 
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import java.util.List;
+import java.time.LocalDateTime;
 
+@AllArgsConstructor
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@AllArgsConstructor
-public class ItemDto {
+public class CommentDto {
     Long id;
-    @NotBlank
-    String name;
-    @NotBlank
-    String description;
-    @NotNull
-    Boolean available;
-    List<Long> requestId;
+    @NotBlank(message = "Текст комментария отсутствует.")
+    String text;
+    String authorName;
+    Long itemId;
+    LocalDateTime created;
 }
