@@ -6,9 +6,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-
 import java.util.HashMap;
 import java.util.Map;
+
 @Slf4j
 @RestControllerAdvice
 public class ErrorHandler {
@@ -21,7 +21,7 @@ public class ErrorHandler {
     public ResponseEntity<String> handleValidationException(final ValidationException e) {
         return sendError(e, HttpStatus.BAD_REQUEST);
     }
-  
+
     @ExceptionHandler(UnsupportedStateException.class)
     public ResponseEntity<?> unsupportedStateException(UnsupportedStateException e) {
         Map<String, String> errors = new HashMap<>();
@@ -29,10 +29,8 @@ public class ErrorHandler {
         return ResponseEntity.status(500).body(errors);
     }
 
-
     @ExceptionHandler
     public ResponseEntity<String> handleUserAlreadyExistException(final AlreadyExistsException e) {
-
         return sendError(e, HttpStatus.CONFLICT);
     }
 
