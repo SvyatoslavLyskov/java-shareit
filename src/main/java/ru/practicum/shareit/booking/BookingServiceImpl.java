@@ -7,12 +7,13 @@ import ru.practicum.shareit.ObjectMapper;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingOutputDto;
 import ru.practicum.shareit.booking.model.Booking;
-import ru.practicum.shareit.exceptions.UnsupportedStateException;
 import ru.practicum.shareit.exceptions.NotFoundException;
+import ru.practicum.shareit.exceptions.UnsupportedStateException;
 import ru.practicum.shareit.exceptions.ValidationException;
 import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.UserRepository;
+import ru.practicum.shareit.user.UserServiceImpl;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -20,7 +21,6 @@ import java.util.List;
 
 import static ru.practicum.shareit.item.ItemService.checkItemAccess;
 import static ru.practicum.shareit.item.ItemService.checkItemExists;
-import static ru.practicum.shareit.user.UserService.checkUserAvailability;
 
 @Service
 @Transactional
@@ -29,13 +29,13 @@ public class BookingServiceImpl implements BookingService {
     private final BookingRepository bookingRepository;
     private final UserRepository userRepository;
     private final ItemRepository itemRepository;
-
+    private final UserServiceImpl userService;
     @Transactional
     @Override
     public BookingOutputDto createBooking(BookingDto dto, Long userId) {
         Long itemId = dto.getItemId();
         validationBookingPeriod(dto);
-        checkUserAvailability(userRepository, userId);
+        userService.checkUserAvailability(userRepository, userId);
         Item item = itemRepository.findById(itemId).orElseThrow(() ->
                 new NotFoundException("Вещь с указанным id не найдена."));
         if (!item.getAvailable()) {
@@ -52,7 +52,7 @@ public class BookingServiceImpl implements BookingService {
     @Transactional
     @Override
     public BookingOutputDto confirmBookingByOwner(Long userId, Long bookingId, boolean approved) {
-        checkUserAvailability(userRepository, userId);
+        userService.checkUserAvailability(userRepository, userId);
         Booking booking = bookingRepository.findById(bookingId).orElseThrow(() ->
                 new NotFoundException("Бронирование с указанным id не найдено."));
         Long itemId = booking.getItem().getId();
@@ -89,7 +89,7 @@ public class BookingServiceImpl implements BookingService {
     @Override
     @Transactional(readOnly = true)
     public List<BookingOutputDto> findAllUsersBooking(Long userId, String state) {
-        checkUserAvailability(userRepository, userId);
+        userService.checkUserAvailability(userRepository, userId);
         LocalDateTime start = LocalDateTime.now();
         List<Booking> bookings = new ArrayList<>();
         checkEnumExist(state);
@@ -119,7 +119,7 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public List<BookingOutputDto> findAllBookingsForItems(Long userId, String state) {
-        checkUserAvailability(userRepository, userId);
+        userService.checkUserAvailability(userRepository, userId);
         if (itemRepository.findItemsByOwnerId(userId).isEmpty()) {
             throw new NotFoundException("У пользователя нет вещей.");
         }

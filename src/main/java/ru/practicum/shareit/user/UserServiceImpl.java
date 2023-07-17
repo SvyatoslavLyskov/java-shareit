@@ -55,4 +55,10 @@ public class UserServiceImpl implements UserService {
     public void deleteUser(Long userId) {
         userRepository.deleteById(userId);
     }
+
+    public void checkUserAvailability(UserRepository userRepository, long id) {
+        if (!userRepository.existsById(id)) {
+            throw new NotFoundException("Пользователь с запрашиваемым айди не зарегистрирован.");
+        }
+    }
 }
