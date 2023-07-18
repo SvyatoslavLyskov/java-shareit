@@ -124,7 +124,7 @@ public class BookingServiceImpl implements BookingService {
     public List<BookingOutputDto> findAllBookingsForItems(Long userId, String state) {
         checkUserAvailability(userRepository, userId);
         if (itemRepository.findItemsByOwnerId(userId).isEmpty()) {
-            throw new NotFoundException("У пользователя c id " + userId +" нет вещей.");
+            throw new NotFoundException("У пользователя c id " + userId + " нет вещей.");
         }
         LocalDateTime start = LocalDateTime.now();
         List<Booking> bookings = new ArrayList<>();
