@@ -14,11 +14,12 @@ import java.time.LocalDateTime;
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ItemRequest {
+    public static final int MAX_DESCRIPTION_LENGTH = 512;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "request_id")
     Long id;
-    @Column(name = "request_description")
+    @Column(name = "request_description", length = MAX_DESCRIPTION_LENGTH)
     String description;
     @ManyToOne
     @JoinColumn(name = "requester_id")

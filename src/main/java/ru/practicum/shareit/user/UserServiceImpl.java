@@ -1,6 +1,7 @@
 package ru.practicum.shareit.user;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.ObjectMapper;
@@ -12,12 +13,14 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
 
     @Override
     public List<UserDto> getAllUsers() {
+        log.info("Получены все пользователи.");
         return userRepository.findAll()
                 .stream()
                 .map(ObjectMapper::toUserDto)
@@ -28,13 +31,14 @@ public class UserServiceImpl implements UserService {
     public UserDto getUserById(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException((String.format("Пользователь с id=%d не найден", userId))));
+        log.info("Найден пользователь с id {}.", userId);
         return ObjectMapper.toUserDto(user);
-
     }
 
     @Override
     public UserDto saveUser(UserDto userDto) {
         User user = ObjectMapper.toUser(userDto);
+        log.info("Создан пользователь {}.", user);
         return ObjectMapper.toUserDto(userRepository.save(user));
     }
 
@@ -48,17 +52,13 @@ public class UserServiceImpl implements UserService {
             oldUser.setEmail(userDto.getEmail());
         }
         User savedUser = userRepository.save(oldUser);
+        log.info("Пользователь с id {} обновлен.", userId);
         return ObjectMapper.toUserDto(savedUser);
     }
 
     @Override
     public void deleteUser(Long userId) {
         userRepository.deleteById(userId);
-    }
-
-    public void checkUserAvailability(UserRepository userRepository, long id) {
-        if (!userRepository.existsById(id)) {
-            throw new NotFoundException("Пользователь с запрашиваемым айди не зарегистрирован.");
-        }
+        log.info("Пользователь с id удален {}.", userId);
     }
 }

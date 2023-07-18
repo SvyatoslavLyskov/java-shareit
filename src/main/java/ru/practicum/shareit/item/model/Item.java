@@ -9,6 +9,7 @@ import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.user.model.User;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
 
 @NoArgsConstructor
@@ -18,13 +19,14 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Table(name = "items")
 public class Item {
+    public static final int MAX_DESCRIPTION_LENGTH = 512;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "item_id")
     Long id;
     @Column(name = "item_name", nullable = false)
     String name;
-    @Column(name = "item_description", nullable = false)
+    @Column(name = "item_description", nullable = false, length = MAX_DESCRIPTION_LENGTH)
     String description;
     @Column(name = "is_available", nullable = false)
     Boolean available;
@@ -33,5 +35,5 @@ public class Item {
     User owner;
     @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name = "request_id")
-    List<ItemRequest> request;
+    List<ItemRequest> request = new ArrayList<>();
 }

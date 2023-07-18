@@ -1,6 +1,7 @@
 package ru.practicum.shareit.item;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.ObjectMapper;
@@ -23,12 +24,16 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static org.springframework.data.repository.util.ClassUtils.ifPresent;
 
 
 @RequiredArgsConstructor
 @Transactional
 @Service
+@Slf4j
 public class ItemServiceImpl implements ItemService {
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
@@ -43,6 +48,7 @@ public class ItemServiceImpl implements ItemService {
         Item item = ObjectMapper.toItem(itemDto, doRequests(itemDto));
         item.setOwner(user);
         itemRepository.save(item);
+        log.info("Добавлена вещь {}", item);
         return ObjectMapper.toItemDto(item);
     }
 
@@ -63,6 +69,7 @@ public class ItemServiceImpl implements ItemService {
         item.setId(itemId);
         item.setOwner(user);
         Item newItem = itemRepository.save(item);
+        log.info("Обновлена вещь {}", newItem);
         return ObjectMapper.toItemDto(newItem);
     }
 
@@ -71,6 +78,7 @@ public class ItemServiceImpl implements ItemService {
         itemRepository.findById(itemId).orElseThrow(() -> new NotFoundException("Вещь с не найдена."));
         ItemService.checkItemAccess(itemRepository, userId, itemId);
         itemRepository.deleteById(itemId);
+        log.info("Удалена вещь с id {}", itemId);
     }
 
     @Override
@@ -82,6 +90,7 @@ public class ItemServiceImpl implements ItemService {
                 now, Status.REJECTED);
         List<Booking> nextBookings = bookingRepository.findByItemIdAndItemOwnerIdAndStartIsAfterAndStatusIsNot(itemId, userId,
                 now, Status.REJECTED);
+        log.info("Найдена вещь с id {}", itemId);
         return ObjectMapper.toItemDtoByOwner(item, lastBookings, nextBookings, comments);
     }
 
@@ -93,6 +102,7 @@ public class ItemServiceImpl implements ItemService {
                 .map(Item::getId)
                 .collect(Collectors.toList()));
         LocalDateTime now = LocalDateTime.now();
+        log.info("Найдены вещи пользователя с id {}", userId);
         return userItems.stream()
                 .map(item -> ObjectMapper.toItemDtoByOwner(item,
                         bookingRepository.findByItemIdAndItemOwnerIdAndStartIsBeforeAndStatusIsNot(item.getId(), userId, now,
@@ -109,6 +119,7 @@ public class ItemServiceImpl implements ItemService {
         if (text.isBlank()) {
             return Collections.emptyList();
         }
+        log.info("Список вещей по запросу {}", text);
         return itemRepository.findByAvailableTrueAndDescriptionContainingIgnoreCaseOrNameContainingIgnoreCase(text, text)
                 .stream()
                 .map(ObjectMapper::toItemDto)
@@ -130,6 +141,7 @@ public class ItemServiceImpl implements ItemService {
         if (comment.getCreated().isBefore(booking.getEnd())) {
             throw new ValidationException("Завершите аренду для написания комментария.");
         }
+        log.info("Добавлен комментарий {}", comment);
         return ObjectMapper.toCommentDto(commentRepository.save(comment));
     }
 

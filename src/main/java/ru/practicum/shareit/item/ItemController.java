@@ -15,16 +15,15 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ItemController {
     private static final String HEADER = "X-Sharer-User-Id";
-    private final ItemServiceImpl itemService;
+    private final ItemService itemService;
 
     @PostMapping
     public ItemDto saveItem(@RequestHeader(HEADER) Long userId, @Valid @RequestBody ItemDto dto) {
         return itemService.saveItem(dto, userId);
     }
 
-
     @PatchMapping("{itemId}")
-    public ItemDto updateItem(@RequestHeader("X-Sharer-User-Id") Long userId, @RequestBody ItemDto dto,
+    public ItemDto updateItem(@RequestHeader(HEADER) Long userId, @RequestBody ItemDto dto,
                               @PathVariable Long itemId) {
         return itemService.updateItem(dto, itemId, userId);
     }

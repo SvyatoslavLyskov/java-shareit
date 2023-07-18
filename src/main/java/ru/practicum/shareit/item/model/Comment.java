@@ -17,11 +17,12 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "comments")
 public class Comment {
+    public static final int MAX_TEXT_LENGTH = 512;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "comment_id")
     Long id;
-    @Column(nullable = false)
+    @Column(nullable = false, length = MAX_TEXT_LENGTH)
     String text;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "author_id", nullable = false)
