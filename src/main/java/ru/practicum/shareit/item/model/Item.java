@@ -1,22 +1,39 @@
 package ru.practicum.shareit.item.model;
 
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import ru.practicum.shareit.request.model.ItemRequest;
+import ru.practicum.shareit.user.model.User;
 
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
+import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
-@Builder
+@NoArgsConstructor
+@Entity
+@AllArgsConstructor
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@Table(name = "items")
 public class Item {
+    public static final int MAX_DESCRIPTION_LENGTH = 512;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "item_id")
     Long id;
-    @NotEmpty
+    @Column(name = "item_name", nullable = false)
     String name;
-    @NotEmpty
+    @Column(name = "item_description", nullable = false, length = MAX_DESCRIPTION_LENGTH)
     String description;
-    @NotNull
+    @Column(name = "is_available", nullable = false)
     Boolean available;
-    Long ownerId;
-    Long requestId;
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "owner_id", nullable = false)
+    User owner;
+    @OneToMany(cascade = CascadeType.ALL)
+    @JoinColumn(name = "request_id")
+    List<ItemRequest> request = new ArrayList<>();
 }
