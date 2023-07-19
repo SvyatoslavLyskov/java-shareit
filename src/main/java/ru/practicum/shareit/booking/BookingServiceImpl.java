@@ -46,7 +46,7 @@ public class BookingServiceImpl implements BookingService {
         }
         dto.setStatus(Status.WAITING);
         Booking booking = ObjectMapper.toBooking(dto, item, userRepository.getReferenceById(userId));
-        log.info("Добавлено бронирование {}", booking);
+        log.info("Добавлено бронирование c id {}", booking.getId());
         return ObjectMapper.toBookingOutputDto(bookingRepository.save(booking));
     }
 
@@ -69,7 +69,7 @@ public class BookingServiceImpl implements BookingService {
         } else {
             booking.setStatus(Status.REJECTED);
         }
-        log.info("Подтверждено бронирование {}", booking);
+        log.info("Подтверждено бронирование c id {}", booking.getId());
         return ObjectMapper.toBookingOutputDto(bookingRepository.save(booking));
     }
 
@@ -84,7 +84,7 @@ public class BookingServiceImpl implements BookingService {
         if (!checkOwnerOrBooker) {
             throw new NotFoundException("Получение данных доступно автору бронирования или владельцу вещи");
         }
-        log.info("Найдено бронирование {}", booking);
+        log.info("Найдено бронирование c id {}", booking.getId());
         return ObjectMapper.toBookingOutputDto(booking);
     }
 
@@ -116,7 +116,7 @@ public class BookingServiceImpl implements BookingService {
                 bookings = bookingRepository.findByBookerIdAndStatusOrderByStartDesc(userId, Status.REJECTED);
                 break;
         }
-        log.info("Список бронирований пользователя{}", bookings);
+        log.info("Список бронирований пользователя {}", bookings);
         return ObjectMapper.toBookingsOutputList(bookings);
     }
 
@@ -150,7 +150,7 @@ public class BookingServiceImpl implements BookingService {
                 bookings = bookingRepository.findByItemOwnerIdAndStatusOrderByStartDesc(userId, Status.REJECTED);
                 break;
         }
-        log.info("Cписок бронирований вещи{}", bookings);
+        log.info("Cписок бронирований вещи {}", bookings);
         return ObjectMapper.toBookingsOutputList(bookings);
     }
 
@@ -164,7 +164,7 @@ public class BookingServiceImpl implements BookingService {
 
     private void checkUserAvailability(UserRepository userRepository, long id) {
         if (!userRepository.existsById(id)) {
-            throw new NotFoundException("Пользователь с запрашиваемым айди не зарегистрирован.");
+            throw new NotFoundException("Пользователь с запрашиваемым id не зарегистрирован.");
         }
     }
 }

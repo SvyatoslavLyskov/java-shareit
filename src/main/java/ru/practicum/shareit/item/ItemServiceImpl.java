@@ -44,7 +44,7 @@ public class ItemServiceImpl implements ItemService {
         Item item = ObjectMapper.toItem(itemDto, doRequests(itemDto));
         item.setOwner(user);
         itemRepository.save(item);
-        log.info("Добавлена вещь {}", item);
+        log.info("Добавлена вещь c id {}", item.getId());
         return ObjectMapper.toItemDto(item);
     }
 
@@ -65,7 +65,7 @@ public class ItemServiceImpl implements ItemService {
         item.setId(itemId);
         item.setOwner(user);
         Item newItem = itemRepository.save(item);
-        log.info("Обновлена вещь {}", newItem);
+        log.info("Обновлена вещь c id {}", newItem.getId());
         return ObjectMapper.toItemDto(newItem);
     }
 
@@ -137,7 +137,7 @@ public class ItemServiceImpl implements ItemService {
         if (comment.getCreated().isBefore(booking.getEnd())) {
             throw new ValidationException("Завершите аренду для написания комментария.");
         }
-        log.info("Добавлен комментарий {}", comment);
+        log.info("Добавлен комментарий c id {}", comment.getId());
         return ObjectMapper.toCommentDto(commentRepository.save(comment));
     }
 
