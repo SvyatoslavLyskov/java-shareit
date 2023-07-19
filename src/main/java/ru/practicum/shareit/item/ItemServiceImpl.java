@@ -24,6 +24,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
@@ -50,21 +51,22 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemDto updateItem(ItemDto itemDto, Long itemId, Long ownerId) {
-        User user = userRepository.findById(ownerId).orElseThrow(() -> new NotFoundException("Пользователь не найден."));
-        Item oldItem = itemRepository.findById(itemId).orElseThrow(() -> new NotFoundException("Вещь не найдена."));
-        Item item = ObjectMapper.toItem(itemDto, doRequests(itemDto));
-        if (item.getName() == null) {
-            item.setName(oldItem.getName());
-        }
-        if (item.getDescription() == null) {
-            item.setDescription(oldItem.getDescription());
-        }
-        if (item.getAvailable() == null) {
-            item.setAvailable(oldItem.getAvailable());
-        }
-        item.setId(itemId);
-        item.setOwner(user);
-        Item newItem = itemRepository.save(item);
+        User user = userRepository.findById(ownerId)
+                .orElseThrow(() -> new NotFoundException("Пользователь не найден."));
+        Item item = itemRepository.findById(itemId)
+                .orElseThrow(() -> new NotFoundException("Вещь не найдена."));
+        Item newItem = itemRepository.save(
+                Optional.of(item)
+                        .map(i -> {
+                            i.setName(Optional.ofNullable(itemDto.getName()).orElse(i.getName()));
+                            i.setDescription(Optional.ofNullable(itemDto.getDescription()).orElse(i.getDescription()));
+                            i.setAvailable(Optional.ofNullable(itemDto.getAvailable()).orElse(i.getAvailable()));
+                            i.setOwner(user);
+                            i.setId(itemId);
+                            return i;
+                        })
+                        .orElseThrow(() -> new RuntimeException("Ошибка при обновлении вещи."))
+        );
         log.info("Обновлена вещь c id {}", newItem.getId());
         return ObjectMapper.toItemDto(newItem);
     }
