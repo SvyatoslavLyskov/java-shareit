@@ -1,5 +1,7 @@
 package ru.practicum.shareit.item;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import ru.practicum.shareit.exceptions.NotFoundException;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
@@ -32,7 +34,9 @@ public interface ItemService {
 
     ItemDtoByOwner getItemById(Long userId, Long itemId);
 
-    List<ItemDtoByOwner> getUserItemsById(Long userId);
+    List<ItemDtoByOwner> findByOwnerId(Long userId);
+
+    Page<Item> findByOwnerId(Long ownerId, Pageable pageable);
 
     List<ItemDto> getUserItemByText(String text);
 

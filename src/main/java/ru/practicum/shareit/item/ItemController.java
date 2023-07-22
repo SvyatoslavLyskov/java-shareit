@@ -2,6 +2,7 @@ package ru.practicum.shareit.item;
 
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
@@ -11,6 +12,7 @@ import javax.validation.Valid;
 import java.util.List;
 
 @RestController
+@Validated
 @RequestMapping("/items")
 @RequiredArgsConstructor
 public class ItemController {
@@ -41,8 +43,9 @@ public class ItemController {
 
     @GetMapping
     public List<ItemDtoByOwner> findAll(@RequestHeader(HEADER) Long userId) {
-        return itemService.getUserItemsById(userId);
+        return itemService.findByOwnerId(userId);
     }
+
 
     @GetMapping("/search")
     public List<ItemDto> findItemByDescription(@RequestParam(required = false) String text) {

@@ -7,7 +7,6 @@ import lombok.experimental.FieldDefaults;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import java.util.List;
 
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -20,5 +19,5 @@ public class ItemDto {
     String description;
     @NotNull
     Boolean available;
-    List<Long> requestId;
+    Long requestId;
 }

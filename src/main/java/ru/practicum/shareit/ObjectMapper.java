@@ -6,8 +6,11 @@ import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemDtoByOwner;
+import ru.practicum.shareit.item.dto.ItemDtoForRequest;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.request.dto.ItemRequestDto;
+import ru.practicum.shareit.request.dto.ItemRequestDtoByOwner;
 import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.model.User;
@@ -41,17 +44,25 @@ public class ObjectMapper {
                 item.getDescription(),
                 item.getAvailable(),
                 item.getRequest() != null ?
-                        item.getRequest().stream().map(ItemRequest::getId).collect(Collectors.toList()) : null
+                        item.getRequest().getId() : null
         );
     }
 
-    public static Item toItem(ItemDto dto, List<ItemRequest> requests) {
+    public static ItemDtoForRequest toItemDtoForRequest(Item item, User owner) {
+        return new ItemDtoForRequest(
+                item.getId(),
+                item.getName(),
+                owner
+        );
+    }
+
+    public static Item toItem(ItemDto dto, ItemRequest requests) {
         Item item = new Item();
         item.setId(dto.getId());
         item.setName(dto.getName());
         item.setDescription(dto.getDescription());
         item.setAvailable(dto.getAvailable());
-        item.setRequest(!requests.isEmpty() ? requests : null);
+        item.setRequest(requests);
         return item;
     }
 
@@ -68,7 +79,7 @@ public class ObjectMapper {
                 item.getDescription(),
                 item.getAvailable(),
                 item.getRequest() != null ?
-                        item.getRequest().stream().map(ItemRequest::getId).collect(Collectors.toList()) : null,
+                        item.getRequest().getId() : null,
                 lastBooking != null ? ObjectMapper.toBookingDto(lastBooking) : null,
                 nextBooking != null ? ObjectMapper.toBookingDto(nextBooking) : null,
                 commentDto
@@ -132,5 +143,33 @@ public class ObjectMapper {
 
     public static List<BookingOutputDto> toBookingsOutputList(List<Booking> bookings) {
         return bookings.stream().map(ObjectMapper::toBookingOutputDto).collect(Collectors.toList());
+    }
+
+    public static ItemRequest toItemRequest(ItemRequestDto dto) {
+        return new ItemRequest(
+                dto.getId(),
+                dto.getDescription(),
+                dto.getRequester(),
+                dto.getCreated()
+        );
+    }
+
+    public static ItemRequestDto toItemRequestDto(ItemRequest request) {
+        return new ItemRequestDto(
+                request.getId(),
+                request.getDescription(),
+                request.getRequester(),
+                request.getCreated()
+        );
+    }
+
+    public static ItemRequestDtoByOwner toItemRequestDtoByOwner(ItemRequest request, List<ItemDto> reply) {
+        return new ItemRequestDtoByOwner(
+                request.getId(),
+                request.getDescription(),
+                request.getRequester(),
+                request.getCreated(),
+                reply
+        );
     }
 }

@@ -2,6 +2,8 @@ package ru.practicum.shareit.item;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.ObjectMapper;
@@ -21,7 +23,6 @@ import ru.practicum.shareit.user.UserRepository;
 import ru.practicum.shareit.user.model.User;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -94,7 +95,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<ItemDtoByOwner> getUserItemsById(Long userId) {
+    public List<ItemDtoByOwner> findByOwnerId(Long userId) {
         List<Item> userItems = itemRepository.findItemsByOwnerId(userId);
         List<Comment> comments = commentRepository.findByItemIdIn(userItems.stream()
                 .map(Item::getId)
@@ -109,6 +110,11 @@ public class ItemServiceImpl implements ItemService {
                                 Status.REJECTED),
                         comments))
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public Page<Item> findByOwnerId(Long ownerId, Pageable pageable) {
+        return null;
     }
 
     @Override
@@ -143,13 +149,13 @@ public class ItemServiceImpl implements ItemService {
         return ObjectMapper.toCommentDto(commentRepository.save(comment));
     }
 
-    private List<ItemRequest> doRequests(ItemDto dto) {
-        List<ItemRequest> requests = new ArrayList<>();
+    private ItemRequest doRequests(ItemDto dto) {
+        ItemRequest requests;
         if (dto.getRequestId() != null) {
-            for (Long requestId : dto.getRequestId()) {
-                requests.add(itemRequestRepository.findById(requestId)
-                        .orElseThrow(() -> new NotFoundException("Запрос не найден.")));
-            }
+            requests = itemRequestRepository.findById(dto.getRequestId())
+                    .orElseThrow(() -> new NotFoundException("Запрос не найден."));
+        } else {
+            requests = null;
         }
         return requests;
     }
