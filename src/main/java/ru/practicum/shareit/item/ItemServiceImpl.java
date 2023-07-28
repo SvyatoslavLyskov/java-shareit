@@ -2,8 +2,7 @@ package ru.practicum.shareit.item;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.ObjectMapper;
@@ -74,7 +73,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public void deleteItem(long userId, long itemId) {
-        itemRepository.findById(itemId).orElseThrow(() -> new NotFoundException("Вещь с не найдена."));
+        itemRepository.findById(itemId).orElseThrow(() -> new NotFoundException("Вещь не найдена."));
         ItemService.checkItemAccess(itemRepository, userId, itemId);
         itemRepository.deleteById(itemId);
         log.info("Удалена вещь с id {}", itemId);
@@ -95,26 +94,22 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<ItemDtoByOwner> findByOwnerId(Long userId) {
-        List<Item> userItems = itemRepository.findItemsByOwnerId(userId);
+    public List<ItemDtoByOwner> findByOwnerId(Long userId, int from, int size) {
+        PageRequest page = PageRequest.of(from / size, size);
+        List<Item> userItems = itemRepository.findItemsByOwnerId(userId, page);
         List<Comment> comments = commentRepository.findByItemIdIn(userItems.stream()
                 .map(Item::getId)
                 .collect(Collectors.toList()));
         LocalDateTime now = LocalDateTime.now();
-        log.info("Найдены вещи пользователя с id {}", userId);
+        log.info("Найден список вещей пользователя с id {}", userId);
         return userItems.stream()
                 .map(item -> ObjectMapper.toItemDtoByOwner(item,
                         bookingRepository.findByItemIdAndItemOwnerIdAndStartIsBeforeAndStatusIsNot(item.getId(), userId, now,
-                                Status.REJECTED),
+                                Status.REJECTED, page),
                         bookingRepository.findByItemIdAndItemOwnerIdAndStartIsAfterAndStatusIsNot(item.getId(), userId, now,
-                                Status.REJECTED),
+                                Status.REJECTED, page),
                         comments))
                 .collect(Collectors.toList());
-    }
-
-    @Override
-    public Page<Item> findByOwnerId(Long ownerId, Pageable pageable) {
-        return null;
     }
 
     @Override

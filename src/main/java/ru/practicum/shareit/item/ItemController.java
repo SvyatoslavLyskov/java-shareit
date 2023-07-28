@@ -9,6 +9,7 @@ import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemDtoByOwner;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Min;
 import java.util.List;
 
 @RestController
@@ -42,10 +43,11 @@ public class ItemController {
     }
 
     @GetMapping
-    public List<ItemDtoByOwner> findAll(@RequestHeader(HEADER) Long userId) {
-        return itemService.findByOwnerId(userId);
+    public List<ItemDtoByOwner> findAll(@RequestHeader(HEADER) Long userId,
+                                        @RequestParam(defaultValue = "0", required = false) @Min(0) int from,
+                                        @RequestParam(defaultValue = "10", required = false) @Min(1) int size) {
+        return itemService.findByOwnerId(userId, from, size);
     }
-
 
     @GetMapping("/search")
     public List<ItemDto> findItemByDescription(@RequestParam(required = false) String text) {

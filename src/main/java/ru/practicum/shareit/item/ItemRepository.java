@@ -16,5 +16,8 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
     List<Item> findByRequestIdIn(List<Long> requestIds);
 
     List<Item> findByAvailableTrueAndDescriptionContainingIgnoreCaseOrNameContainingIgnoreCase(String text, String texts);
+
+    List<Item> findByAvailableTrueAndDescriptionContainingIgnoreCaseOrNameContainingIgnoreCase(
+            String text, String texts, Pageable pageable);
 }
 

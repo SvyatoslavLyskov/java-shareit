@@ -17,10 +17,7 @@ import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.user.UserRepository;
 import ru.practicum.shareit.user.model.User;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static ru.practicum.shareit.booking.BookingServiceImpl.checkUserAvailability;
@@ -33,6 +30,7 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     private final ItemRequestRepository requestRepository;
     private final UserRepository userRepository;
     private final ItemRepository itemRepository;
+
     @Override
     public ItemRequestDto addRequest(ItemRequestDto itemRequestDto, Long userId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException(
@@ -49,6 +47,7 @@ public class ItemRequestServiceImpl implements ItemRequestService {
         Sort sort = Sort.by(Sort.Direction.DESC, "created");
         PageRequest pageRequest = PageRequest.of(from / size, size, sort);
         List<ItemRequest> requests = requestRepository.findAllByRequesterIdNot(userId, pageRequest);
+        log.info("Получены запросы пользовталея c id {}", userId);
         return findAndMap(requests);
     }
 
@@ -56,19 +55,19 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     public List<ItemRequestDtoByOwner> findAllUsersRequestsWithReplies(Long userId) {
         checkUserAvailability(userRepository, userId);
         List<ItemRequest> requests = requestRepository.findAllByRequesterId(userId);
+        log.info("Получены запросы пользовталея c id {}", userId);
         return findAndMap(requests);
     }
 
     @Override
     public ItemRequestDtoByOwner getRequestById(Long userId, Long requestId) {
         checkUserAvailability(userRepository, userId);
-        ItemRequest request = requestRepository.findById(requestId).orElseThrow(() -> new NotFoundException("Запрос не найден."));
-
-        List<Item> items = itemRepository.findByRequestId(requestId);
-        List<ItemDto> reply = new ArrayList<>();
-        for (Item item : items) {
-            reply.add(ObjectMapper.toItemDto(item));
-        }
+        ItemRequest request = requestRepository.findById(requestId).orElseThrow(() ->
+                new NotFoundException("Запрос не найден."));
+        List<ItemDto> reply = itemRepository.findByRequestId(requestId).stream()
+                .map(ObjectMapper::toItemDto)
+                .collect(Collectors.toList());
+        log.info("Получен запрос c id {}", requestId);
         return ObjectMapper.toItemRequestDtoByOwner(request, reply);
     }
 
@@ -77,15 +76,14 @@ public class ItemRequestServiceImpl implements ItemRequestService {
                 .map(ItemRequest::getId)
                 .collect(Collectors.toList());
         List<Item> items = itemRepository.findByRequestIdIn(requestIds);
-        Map<Long, List<Item>> itemMap = items.stream()
-                .collect(Collectors.groupingBy(item -> item.getRequest().getId()));
-        List<ItemRequestDtoByOwner> result = new ArrayList<>();
-        for (ItemRequest itemRequest : requests) {
-            List<ItemDto> itemDtoList = itemMap.getOrDefault(itemRequest.getId(), Collections.emptyList()).stream()
-                    .map(ObjectMapper::toItemDto)
-                    .collect(Collectors.toList());
-            result.add(ObjectMapper.toItemRequestDtoByOwner(itemRequest, itemDtoList));
-        }
-        return result;
+        Map<Long, List<ItemDto>> itemMap = new HashMap<>();
+        items.stream()
+                .map(ObjectMapper::toItemDto)
+                .forEach(itemDto -> itemMap.computeIfAbsent(itemDto.getRequestId(),
+                        k -> new ArrayList<>()).add(itemDto));
+        return requests.stream()
+                .map(itemRequest -> ObjectMapper.toItemRequestDtoByOwner(itemRequest,
+                        itemMap.getOrDefault(itemRequest.getId(), Collections.emptyList())))
+                .collect(Collectors.toList());
     }
 }
