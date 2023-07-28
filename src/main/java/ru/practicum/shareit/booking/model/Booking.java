@@ -2,7 +2,6 @@ package ru.practicum.shareit.booking.model;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-import org.springframework.data.web.JsonPath;
 import ru.practicum.shareit.booking.Status;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.model.User;
