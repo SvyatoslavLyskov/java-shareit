@@ -125,7 +125,6 @@ public class ItemServiceImpl implements ItemService {
                 .collect(Collectors.toList());
     }
 
-
     @Override
     public CommentDto addComment(CommentDto commentDto, long userId, long itemId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new ValidationException("Пользователь не найден."));
