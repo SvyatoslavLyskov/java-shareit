@@ -1,6 +1,7 @@
 package ru.practicum.shareit.booking;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.experimental.FieldDefaults;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,6 +20,7 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 
+import static lombok.AccessLevel.PRIVATE;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -26,6 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(controllers = BookingController.class)
+@FieldDefaults(level = PRIVATE)
 public class BookingControllerTest {
     public static final String HEADER = "X-Sharer-User-Id";
     @Autowired
@@ -33,9 +36,9 @@ public class BookingControllerTest {
     @Autowired
     MockMvc mockMvc;
     @MockBean
-    private BookingServiceImpl bookingService;
-    private BookingDto bookingDto;
-    private BookingOutputDto bookingOutputDto;
+    BookingServiceImpl bookingService;
+    BookingDto bookingDto;
+    BookingOutputDto bookingOutputDto;
 
     @BeforeEach
     void setUp() {

@@ -6,7 +6,6 @@ import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemDtoByOwner;
-import ru.practicum.shareit.item.dto.ItemDtoForRequest;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
@@ -16,6 +15,7 @@ import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.model.User;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -45,14 +45,6 @@ public class ObjectMapper {
                 item.getAvailable(),
                 item.getRequest() != null ?
                         item.getRequest().getId() : null
-        );
-    }
-
-    public static ItemDtoForRequest toItemDtoForRequest(Item item, User owner) {
-        return new ItemDtoForRequest(
-                item.getId(),
-                item.getName(),
-                owner
         );
     }
 
@@ -141,8 +133,12 @@ public class ObjectMapper {
         );
     }
 
-    public static List<BookingOutputDto> toBookingsOutputList(List<Booking> bookings) {
-        return bookings.stream().map(ObjectMapper::toBookingOutputDto).collect(Collectors.toList());
+    public static List<BookingOutputDto> toBookingsOutputList(Iterable<Booking> bookings) {
+        List<BookingOutputDto> result = new ArrayList<>();
+        for (Booking booking : bookings) {
+            result.add(toBookingOutputDto(booking));
+        }
+        return result;
     }
 
     public static ItemRequest toItemRequest(ItemRequestDto dto) {

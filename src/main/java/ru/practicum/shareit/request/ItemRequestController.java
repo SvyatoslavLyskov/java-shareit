@@ -10,12 +10,13 @@ import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import java.util.List;
 
+import static ru.practicum.shareit.item.ItemController.HEADER;
+
 @RestController
 @RequestMapping(path = "/requests")
 @RequiredArgsConstructor
 @Validated
 public class ItemRequestController {
-    private static final String HEADER = "X-Sharer-User-Id";
     private final ItemRequestService itemRequestService;
 
     @PostMapping
@@ -25,7 +26,7 @@ public class ItemRequestController {
     }
 
     @GetMapping
-    public List<ItemRequestDtoByOwner> findAllWithReplies(@RequestHeader("X-Sharer-User-Id") Long userId) {
+    public List<ItemRequestDtoByOwner> findAllWithReplies(@RequestHeader(HEADER) Long userId) {
         return itemRequestService.findAllUsersRequestsWithReplies(userId);
     }
 

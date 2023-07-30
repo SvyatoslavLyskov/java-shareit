@@ -1,5 +1,6 @@
 package ru.practicum.shareit.booking;
 
+import lombok.experimental.FieldDefaults;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,21 +17,24 @@ import javax.persistence.EntityManager;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static lombok.AccessLevel.PRIVATE;
+
 @Transactional
 @SpringBootTest
+@FieldDefaults(level = PRIVATE)
 class BookingIntegrationTest {
     @Autowired
-    private EntityManager em;
+    EntityManager em;
     @Autowired
-    private BookingService bookingService;
+    BookingService bookingService;
     @Autowired
-    private BookingRepository bookingRepository;
-    private final LocalDateTime now = LocalDateTime.now();
-    private User owner;
-    private User booker;
-    private Item item1;
-    private Booking booking2;
-    private Booking booking3;
+    BookingRepository bookingRepository;
+    final LocalDateTime now = LocalDateTime.now();
+    User owner;
+    User booker;
+    Item item1;
+    Booking booking2;
+    Booking booking3;
 
     @BeforeEach
     void setUp() {

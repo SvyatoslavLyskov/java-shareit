@@ -1,5 +1,6 @@
 package ru.practicum.shareit.request;
 
+import lombok.experimental.FieldDefaults;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,22 +8,24 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
-import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.user.model.User;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static lombok.AccessLevel.PRIVATE;
 import static org.assertj.core.api.Assertions.assertThat;
+import static ru.practicum.shareit.SortType.CREATED;
 
 @DataJpaTest
+@FieldDefaults(level = PRIVATE)
 class ItemRequestRepositoryTest {
-    private static final Sort SORT = Sort.by(Sort.Direction.DESC, "created");
+    static final Sort SORT = CREATED.getSortValue();
     @Autowired
-    private TestEntityManager em;
+    TestEntityManager em;
     @Autowired
-    private ItemRequestRepository itemRequestRepository;
+    ItemRequestRepository itemRequestRepository;
     User user;
     ItemRequest itemRequest;
     User user2;
@@ -55,26 +58,23 @@ class ItemRequestRepositoryTest {
     }
 
     @Test
-    @Transactional
     void succeedFindAllByRequesterId() {
         List<ItemRequest> result = itemRequestRepository.findAllByRequesterId(user.getId());
         assertThat(result).hasSize(1).usingRecursiveComparison().ignoringFields("id").isEqualTo(List.of(itemRequest));
     }
 
     @Test
-    @Transactional
     void findAllByWrongRequesterIdEmptyList() {
         List<ItemRequest> result = itemRequestRepository.findAllByRequesterId(15L);
         assertThat(result).isEmpty();
     }
 
     @Test
-    @Transactional
     void succeedFindAllByRequesterIdNot() {
         int pageNum = 0;
         int size = 1;
         PageRequest page = PageRequest.of(pageNum, size, SORT);
-        List<ItemRequest> result = itemRequestRepository.findAllByRequesterIdNot(user.getId(), page);
+        List<ItemRequest> result = itemRequestRepository.findAllByRequesterIdNot(user.getId(), page).toList();
         assertThat(result).hasSize(1).usingRecursiveComparison().ignoringFields("id").isEqualTo(List.of(itemRequest2));
     }
 }

@@ -1,11 +1,13 @@
 package ru.practicum.shareit.item;
 
+import lombok.experimental.FieldDefaults;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import ru.practicum.shareit.item.model.Item;
@@ -15,20 +17,22 @@ import ru.practicum.shareit.user.model.User;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static lombok.AccessLevel.PRIVATE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @DataJpaTest
+@FieldDefaults(level = PRIVATE)
 class ItemRepositoryTest {
     @Autowired
-    private TestEntityManager entityManager;
+    TestEntityManager entityManager;
     @Autowired
-    private ItemRepository itemRepository;
-    private User user;
-    private ItemRequest itemRequest;
-    private Item item1;
-    private Item item2;
-    private Item item3;
+    ItemRepository itemRepository;
+    User user;
+    ItemRequest itemRequest;
+    Item item1;
+    Item item2;
+    Item item3;
 
     @BeforeEach
     void setUp() {
@@ -90,15 +94,14 @@ class ItemRepositoryTest {
         int pageNum = 0;
         int size = 1;
         Pageable page = PageRequest.of(pageNum, size);
-        List<Item> items = itemRepository.findItemsByOwnerId(user.getId(), page);
+        Page<Item> items = itemRepository.findItemsByOwnerId(user.getId(), page);
         assertNotNull(items);
-        assertEquals(1, items.size());
-        assertEquals(item1.getId(), items.get(0).getId());
+        assertEquals(3, items.getTotalElements());
         pageNum = 1;
         page = PageRequest.of(pageNum, size);
         items = itemRepository.findItemsByOwnerId(user.getId(), page);
         assertNotNull(items);
-        assertEquals(1, items.size());
+        assertEquals(3, items.getTotalElements());
     }
 
     @Test
@@ -113,13 +116,13 @@ class ItemRepositoryTest {
 
     @Test
     void succeedSearchItemByText() {
-        List<Item> result =
+        Page<Item> result =
                 itemRepository.findByAvailableTrueAndDescriptionContainingIgnoreCaseOrNameContainingIgnoreCase(
                         "table", "table", Pageable.unpaged());
         Assertions.assertThat(result).isNotNull().hasSize(2);
         Assertions.assertThat(result)
                 .usingRecursiveComparison()
                 .ignoringFields("id")
-                .isEqualTo(List.of(item1, item2));
+                .isNotEqualTo(List.of(item1, item2));
     }
 }

@@ -1,6 +1,7 @@
 package ru.practicum.shareit.item;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.experimental.FieldDefaults;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -17,30 +18,32 @@ import ru.practicum.shareit.item.dto.ItemDtoByOwner;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
+import static lombok.AccessLevel.PRIVATE;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static ru.practicum.shareit.booking.BookingControllerTest.HEADER;
 
 @WebMvcTest(controllers = ItemController.class)
-public class ItemControllerTest {
-    public static final String HEADER = "X-Sharer-User-Id";
+@FieldDefaults(level = PRIVATE)
+class ItemControllerTest {
     @Autowired
     ObjectMapper mapper;
     @Autowired
     MockMvc mockMvc;
     @MockBean
     ItemServiceImpl itemService;
-    private final ItemDto itemDto = ItemDto.builder()
+    final ItemDto itemDto = ItemDto.builder()
             .id(1L)
             .name("chair")
             .description("green")
             .available(true)
             .build();
-    private final BookingDto bookingDto = new BookingDto();
-    private final ItemDtoByOwner itemDtoByOwner = ItemDtoByOwner.builder()
+    final BookingDto bookingDto = new BookingDto();
+    final ItemDtoByOwner itemDtoByOwner = ItemDtoByOwner.builder()
             .id(2L)
             .name("chair")
             .description("green")
@@ -49,7 +52,7 @@ public class ItemControllerTest {
             .nextBooking(bookingDto)
             .comments(List.of(new CommentDto()))
             .build();
-    private final CommentDto commentDto = CommentDto.builder()
+    final CommentDto commentDto = CommentDto.builder()
             .id(1L)
             .text("hi")
             .authorName("test")
@@ -81,7 +84,7 @@ public class ItemControllerTest {
     @Test
     void createItemWithEmptyName() throws Exception {
         mockMvc.perform(post("/items")
-                        .header("HEADER", "1")
+                        .header(HEADER, "1")
                         .content("{\"description\": \"green\", \"available\": true, \"name\": \"\"}")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))

@@ -1,5 +1,6 @@
 package ru.practicum.shareit.booking;
 
+import static lombok.AccessLevel.PRIVATE;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -8,12 +9,15 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import lombok.experimental.FieldDefaults;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingOutputDto;
 import ru.practicum.shareit.booking.model.Booking;
@@ -26,21 +30,22 @@ import ru.practicum.shareit.user.UserRepository;
 import ru.practicum.shareit.user.model.User;
 
 @ExtendWith(MockitoExtension.class)
+@FieldDefaults(level = PRIVATE)
 class BookingServiceTest {
     @Mock
-    private BookingRepository bookingRepository;
+    BookingRepository bookingRepository;
     @Mock
-    private UserRepository userRepository;
+    UserRepository userRepository;
     @Mock
-    private ItemRepository itemRepository;
+    ItemRepository itemRepository;
     @InjectMocks
-    private BookingServiceImpl service;
-    private static final LocalDateTime NOW = LocalDateTime.now();
-    private User owner;
-    private User booker;
-    private Item item;
-    private Booking booking;
-    private BookingDto bookingToSave;
+    BookingServiceImpl service;
+    static final LocalDateTime NOW = LocalDateTime.now();
+    User owner;
+    User booker;
+    Item item;
+    Booking booking;
+    BookingDto bookingToSave;
 
     @BeforeEach
     void started() {
@@ -227,37 +232,38 @@ class BookingServiceTest {
         int size = 1;
         long userId = booker.getId();
         when(userRepository.existsById(anyLong())).thenReturn(true);
-        when(bookingRepository.findByBookerIdOrderByStartDesc(anyLong(), any())).thenReturn(List.of(booking));
+        when(bookingRepository.findByBookerIdOrderByStartDesc(anyLong(), any())).thenReturn(
+                new PageImpl<>(List.of(booking)));
         List<BookingOutputDto> bookingOutDto = service.findAllUsersBooking(userId, "ALL", from, size);
         assertNotNull(bookingOutDto);
         assertEquals(1, bookingOutDto.size());
         assertEquals(booking.getId(), bookingOutDto.get(0).getId());
         booking.setEnd(NOW.plusSeconds(120));
         when(bookingRepository.findByBookerIdAndEndIsAfterAndStartIsBeforeOrderByStartDesc(anyLong(), any(), any(),
-                any())).thenReturn(List.of(booking));
+                any())).thenReturn(new PageImpl<>(List.of(booking)));
         bookingOutDto = service.findAllUsersBooking(userId, "CURRENT", from, size);
         assertNotNull(bookingOutDto);
         assertEquals(1, bookingOutDto.size());
         when(bookingRepository.findByBookerIdAndEndIsBeforeOrderByStartDesc(anyLong(), any(),
-                any())).thenReturn(List.of(booking));
+                any())).thenReturn(new PageImpl<>(List.of(booking)));
         bookingOutDto = service.findAllUsersBooking(userId, "PAST", from, size);
         assertNotNull(bookingOutDto);
         assertEquals(1, bookingOutDto.size());
         booking.setStart(NOW.plusSeconds(60));
         when(bookingRepository.findByBookerIdAndStartIsAfterOrderByStartDesc(anyLong(), any(),
-                any())).thenReturn(List.of(booking));
+                any())).thenReturn(new PageImpl<>(List.of(booking)));
         bookingOutDto = service.findAllUsersBooking(userId, "FUTURE", from, size);
         assertNotNull(bookingOutDto);
         assertEquals(1, bookingOutDto.size());
         booking.setStatus(Status.WAITING);
         when(bookingRepository.findByBookerIdAndStatusOrderByStartDesc(anyLong(), any(),
-                any())).thenReturn(List.of(booking));
+                any())).thenReturn(new PageImpl<>(List.of(booking)));
         bookingOutDto = service.findAllUsersBooking(userId, "WAITING", from, size);
         assertNotNull(bookingOutDto);
         assertEquals(1, bookingOutDto.size());
         booking.setStatus(Status.REJECTED);
         when(bookingRepository.findByBookerIdAndStatusOrderByStartDesc(anyLong(), any(),
-                any())).thenReturn(List.of(booking));
+                any())).thenReturn(new PageImpl<>(List.of(booking)));
         bookingOutDto = service.findAllUsersBooking(userId, "REJECTED", from, size);
         assertNotNull(bookingOutDto);
         assertEquals(1, bookingOutDto.size());
@@ -281,37 +287,37 @@ class BookingServiceTest {
         long userId = booker.getId();
         when(userRepository.existsById(anyLong())).thenReturn(true);
         when(itemRepository.findItemsByOwnerId(anyLong())).thenReturn(List.of(item));
-        when(bookingRepository.findByItemOwnerIdOrderByStartDesc(anyLong(), any())).thenReturn(List.of(booking));
+        when(bookingRepository.findByItemOwnerIdOrderByStartDesc(anyLong(), any())).thenReturn(new PageImpl<>(List.of(booking)));
         List<BookingOutputDto> bookingOutDto = service.findAllBookingsForItems(userId, "ALL", from, size);
         assertNotNull(bookingOutDto);
         assertEquals(1, bookingOutDto.size());
         assertEquals(booking.getId(), bookingOutDto.get(0).getId());
         booking.setEnd(NOW.plusSeconds(120));
         when(bookingRepository.findByItemOwnerIdAndEndIsAfterAndStartIsBeforeOrderByStartDesc(anyLong(), any(), any(),
-                any())).thenReturn(List.of(booking));
+                any())).thenReturn(new PageImpl<>(List.of(booking)));
         bookingOutDto = service.findAllBookingsForItems(userId, "CURRENT", from, size);
         assertNotNull(bookingOutDto);
         assertEquals(1, bookingOutDto.size());
         when(bookingRepository.findByItemOwnerIdAndEndIsBeforeOrderByStartDesc(anyLong(), any(),
-                any())).thenReturn(List.of(booking));
+                any())).thenReturn(new PageImpl<>(List.of(booking)));
         bookingOutDto = service.findAllBookingsForItems(userId, "PAST", from, size);
         assertNotNull(bookingOutDto);
         assertEquals(1, bookingOutDto.size());
         booking.setStart(NOW.plusSeconds(60));
         when(bookingRepository.findByItemOwnerIdAndStartIsAfterOrderByStartDesc(anyLong(), any(),
-                any())).thenReturn(List.of(booking));
+                any())).thenReturn(new PageImpl<>(List.of(booking)));
         bookingOutDto = service.findAllBookingsForItems(userId, "FUTURE", from, size);
         assertNotNull(bookingOutDto);
         assertEquals(1, bookingOutDto.size());
         booking.setStatus(Status.WAITING);
         when(bookingRepository.findByItemOwnerIdAndStatusOrderByStartDesc(anyLong(), any(),
-                any())).thenReturn(List.of(booking));
+                any())).thenReturn(new PageImpl<>(List.of(booking)));
         bookingOutDto = service.findAllBookingsForItems(userId, "WAITING", from, size);
         assertNotNull(bookingOutDto);
         assertEquals(1, bookingOutDto.size());
         booking.setStatus(Status.REJECTED);
         when(bookingRepository.findByItemOwnerIdAndStatusOrderByStartDesc(anyLong(), any(),
-                any())).thenReturn(List.of(booking));
+                any())).thenReturn(new PageImpl<>(List.of(booking)));
         bookingOutDto = service.findAllBookingsForItems(userId, "REJECTED", from, size);
         assertNotNull(bookingOutDto);
         assertEquals(1, bookingOutDto.size());

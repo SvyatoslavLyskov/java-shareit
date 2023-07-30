@@ -1,5 +1,6 @@
 package ru.practicum.shareit.request;
 
+import lombok.experimental.FieldDefaults;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,19 +16,21 @@ import javax.persistence.EntityManager;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static lombok.AccessLevel.PRIVATE;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @Transactional
 @SpringBootTest
+@FieldDefaults(level = PRIVATE)
 public class ItemRequestIntegrationTest {
     @Autowired
-    private EntityManager em;
+    EntityManager em;
     @Autowired
-    private ItemRequestService itemRequestService;
-    private User owner;
-    private User user;
-    private ItemRequest request;
-    private final LocalDateTime now = LocalDateTime.now();
+    ItemRequestService itemRequestService;
+    User owner;
+    User user;
+    ItemRequest request;
+    final LocalDateTime now = LocalDateTime.now();
 
     @BeforeEach
     void setUp() {

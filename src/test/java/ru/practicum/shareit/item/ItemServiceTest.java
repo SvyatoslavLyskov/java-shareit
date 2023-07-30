@@ -1,11 +1,14 @@
 package ru.practicum.shareit.item;
 
+import lombok.experimental.FieldDefaults;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.booking.Status;
@@ -25,12 +28,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import static lombok.AccessLevel.PRIVATE;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
+@FieldDefaults(level = PRIVATE)
 class ItemServiceTest {
-    private static final LocalDateTime NOW = LocalDateTime.now();
+    static final LocalDateTime NOW = LocalDateTime.now();
     @Mock
     ItemRepository repository;
     @Mock
@@ -41,12 +46,12 @@ class ItemServiceTest {
     CommentRepository commentRepository;
     @InjectMocks
     ItemServiceImpl service;
-    private User owner;
-    private User booker;
-    private Item item;
-    private Item item2;
-    private Booking booking;
-    private Comment comment;
+    User owner;
+    User booker;
+    Item item;
+    Item item2;
+    Booking booking;
+    Comment comment;
 
     @BeforeEach
     void setup() {
@@ -109,7 +114,7 @@ class ItemServiceTest {
         NotFoundException exception = assertThrows(
                 NotFoundException.class,
                 () -> service.updateItem(ObjectMapper.toItemDto(item), itemId, userId));
-        assertEquals("Пользователь не найден.", exception.getMessage());
+        assertEquals("Пользователь c id " + userId + " не найден.", exception.getMessage());
     }
 
     @Test
@@ -121,7 +126,7 @@ class ItemServiceTest {
         NotFoundException exception = assertThrows(
                 NotFoundException.class,
                 () -> service.updateItem(ObjectMapper.toItemDto(item), itemNotFoundId, userId));
-        assertEquals("Вещь не найдена.", exception.getMessage());
+        assertEquals("Вещь c id " + itemNotFoundId + " не найдена.", exception.getMessage());
     }
 
     @Test
@@ -324,10 +329,10 @@ class ItemServiceTest {
         PageRequest page = PageRequest.of(from / size, size);
         when(commentRepository.findByItemIdIn(any())).thenReturn(List.of(comment));
         when(bookingRepository.findByItemIdAndItemOwnerIdAndStartIsBeforeAndStatusIsNot(anyLong(),
-                anyLong(), any(), any(), any())).thenReturn(List.of(booking));
+                anyLong(), any(), any(), any())).thenReturn(new PageImpl<>(List.of(booking)));
         when(bookingRepository.findByItemIdAndItemOwnerIdAndStartIsAfterAndStatusIsNot(anyLong(),
-                anyLong(), any(), any(), any())).thenReturn(List.of(booking));
-        when(repository.findItemsByOwnerId(userId, page)).thenReturn(List.of(item));
+                anyLong(), any(), any(), any())).thenReturn(new PageImpl<>(List.of(booking)));
+        when(repository.findItemsByOwnerId(userId, page)).thenReturn(new PageImpl<>(List.of(item)));
         List<ItemDtoByOwner> itemDtos = service.findByOwnerId(userId, from, size);
         assertNotNull(itemDtos);
         assertEquals(1, itemDtos.size());
@@ -340,7 +345,7 @@ class ItemServiceTest {
         int from = 0;
         int size = 1;
         PageRequest page = PageRequest.of(from / size, size);
-        when(repository.findItemsByOwnerId(userId, page)).thenReturn(Collections.emptyList());
+        when(repository.findItemsByOwnerId(userId, page)).thenReturn(Page.empty());
         List<ItemDtoByOwner> itemDtos = service.findByOwnerId(userId, from, size);
         assertNotNull(itemDtos);
         assertEquals(0, itemDtos.size());

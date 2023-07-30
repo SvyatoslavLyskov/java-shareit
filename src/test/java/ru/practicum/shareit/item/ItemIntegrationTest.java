@@ -1,5 +1,6 @@
 package ru.practicum.shareit.item;
 
+import lombok.experimental.FieldDefaults;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,17 +21,20 @@ import javax.persistence.EntityManager;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static lombok.AccessLevel.PRIVATE;
+
 @SpringBootTest
 @Transactional
-public class ItemIntegrationTest {
+@FieldDefaults(level = PRIVATE)
+class ItemIntegrationTest {
     @Autowired
-    private ItemService itemService;
+    ItemService itemService;
     @Autowired
-    private EntityManager entityManager;
-    private User owner;
-    private User booker;
-    private Item item;
-    private Item item2;
+    EntityManager entityManager;
+    User owner;
+    User booker;
+    Item item;
+    Item item2;
 
     @BeforeEach
     void setUp() {

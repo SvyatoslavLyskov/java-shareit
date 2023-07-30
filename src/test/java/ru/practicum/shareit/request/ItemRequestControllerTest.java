@@ -1,6 +1,7 @@
 package ru.practicum.shareit.request;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.experimental.FieldDefaults;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -12,27 +13,29 @@ import ru.practicum.shareit.request.dto.ItemRequestDtoByOwner;
 
 import java.util.List;
 
+import static lombok.AccessLevel.PRIVATE;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static ru.practicum.shareit.booking.BookingControllerTest.HEADER;
 
 @WebMvcTest(controllers = ItemRequestController.class)
-public class ItemRequestControllerTest {
-    public static final String HEADER = "X-Sharer-User-Id";
+@FieldDefaults(level = PRIVATE)
+class ItemRequestControllerTest {
     @Autowired
     ObjectMapper mapper;
     @Autowired
     MockMvc mockMvc;
     @MockBean
     ItemRequestServiceImpl itemRequestService;
-    private final ItemRequestDto itemRequestDto = ItemRequestDto.builder()
+    final ItemRequestDto itemRequestDto = ItemRequestDto.builder()
             .id(1L)
             .description("доска")
             .build();
-    private final ItemRequestDtoByOwner itemRequestDtoByOwner = ItemRequestDtoByOwner.builder()
+    final ItemRequestDtoByOwner itemRequestDtoByOwner = ItemRequestDtoByOwner.builder()
             .id(1L)
             .description("доска")
             .build();

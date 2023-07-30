@@ -2,6 +2,7 @@ package ru.practicum.shareit.item;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,8 +42,8 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public ItemDto saveItem(ItemDto itemDto, Long ownerId) {
         User user = userRepository.findById(ownerId).orElseThrow(() ->
-                new NotFoundException("Пользователь не найден."));
-        Item item = ObjectMapper.toItem(itemDto, doRequests(itemDto));
+                new NotFoundException("Пользователь c id " + ownerId + " не найден."));
+        Item item = ObjectMapper.toItem(itemDto, doRequest(itemDto));
         item.setOwner(user);
         itemRepository.save(item);
         log.info("Добавлена вещь c id {}", item.getId());
@@ -52,9 +53,9 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public ItemDto updateItem(ItemDto itemDto, Long itemId, Long ownerId) {
         User user = userRepository.findById(ownerId)
-                .orElseThrow(() -> new NotFoundException("Пользователь не найден."));
+                .orElseThrow(() -> new NotFoundException("Пользователь c id " + ownerId + " не найден."));
         Item item = itemRepository.findById(itemId)
-                .orElseThrow(() -> new NotFoundException("Вещь не найдена."));
+                .orElseThrow(() -> new NotFoundException("Вещь c id " + itemId + " не найдена."));
         Item newItem = itemRepository.save(
                 Optional.of(item)
                         .map(i -> {
@@ -65,7 +66,7 @@ public class ItemServiceImpl implements ItemService {
                             i.setId(itemId);
                             return i;
                         })
-                        .orElseThrow(() -> new RuntimeException("Ошибка при обновлении вещи."))
+                        .orElseThrow(() -> new RuntimeException("Ошибка при обновлении вещи c id " + itemId))
         );
         log.info("Обновлена вещь c id {}", newItem.getId());
         return ObjectMapper.toItemDto(newItem);
@@ -73,7 +74,8 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public void deleteItem(long userId, long itemId) {
-        itemRepository.findById(itemId).orElseThrow(() -> new NotFoundException("Вещь не найдена."));
+        itemRepository.findById(itemId).orElseThrow(() -> new NotFoundException(
+                "Вещь c id " + itemId + " не найдена."));
         ItemService.checkItemAccess(itemRepository, userId, itemId);
         itemRepository.deleteById(itemId);
         log.info("Удалена вещь с id {}", itemId);
@@ -81,7 +83,8 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemDtoByOwner getItemById(Long userId, Long itemId) {
-        Item item = itemRepository.findById(itemId).orElseThrow(() -> new NotFoundException("Вещь не найдена."));
+        Item item = itemRepository.findById(itemId).orElseThrow(() -> new NotFoundException(
+                "Вещь c id " + itemId + " не найдена."));
         List<Comment> comments = commentRepository.findByItemId(itemId);
         LocalDateTime now = LocalDateTime.now();
         List<Booking> lastBookings = bookingRepository.findByItemIdAndItemOwnerIdAndStartIsBeforeAndStatusIsNot(itemId, userId,
@@ -89,26 +92,30 @@ public class ItemServiceImpl implements ItemService {
         List<Booking> nextBookings = bookingRepository.findByItemIdAndItemOwnerIdAndStartIsAfterAndStatusIsNot(itemId, userId,
                 now, Status.REJECTED);
         log.info("Найдена вещь с id {}", itemId);
-        return ObjectMapper.toItemDtoByOwner(item, lastBookings, nextBookings, comments);
+        return ObjectMapper.toItemDtoByOwner(item,
+                lastBookings, nextBookings, comments);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<ItemDtoByOwner> findByOwnerId(Long userId, int from, int size) {
         PageRequest page = PageRequest.of(from / size, size);
-        List<Item> userItems = itemRepository.findItemsByOwnerId(userId, page);
+        Page<Item> userItems = itemRepository.findItemsByOwnerId(userId, page);
         List<Comment> comments = commentRepository.findByItemIdIn(userItems.stream()
                 .map(Item::getId)
                 .collect(Collectors.toList()));
         LocalDateTime now = LocalDateTime.now();
         log.info("Найден список вещей пользователя с id {}", userId);
         return userItems.stream()
-                .map(item -> ObjectMapper.toItemDtoByOwner(item,
-                        bookingRepository.findByItemIdAndItemOwnerIdAndStartIsBeforeAndStatusIsNot(item.getId(), userId, now,
-                                Status.REJECTED, page),
-                        bookingRepository.findByItemIdAndItemOwnerIdAndStartIsAfterAndStatusIsNot(item.getId(), userId, now,
-                                Status.REJECTED, page),
-                        comments))
+                .map(item -> {
+                    List<Booking> pastBookings = bookingRepository.findByItemIdAndItemOwnerIdAndStartIsBeforeAndStatusIsNot(
+                            item.getId(), userId, now, Status.REJECTED, page
+                    ).getContent();
+                    List<Booking> futureBookings = bookingRepository.findByItemIdAndItemOwnerIdAndStartIsAfterAndStatusIsNot(
+                            item.getId(), userId, now, Status.REJECTED, page
+                    ).getContent();
+                    return ObjectMapper.toItemDtoByOwner(item, pastBookings, futureBookings, comments);
+                })
                 .collect(Collectors.toList());
     }
 
@@ -127,8 +134,10 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public CommentDto addComment(CommentDto commentDto, long userId, long itemId) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new ValidationException("Пользователь не найден."));
-        Item item = itemRepository.findById(itemId).orElseThrow(() -> new ValidationException("Вещь не найдена."));
+        User user = userRepository.findById(userId).orElseThrow(() -> new ValidationException(
+                "Пользователь c id " + userId + " не найден."));
+        Item item = itemRepository.findById(itemId).orElseThrow(() -> new ValidationException(
+                "Вещь c id " + itemId + " не найдена."));
         Booking booking = bookingRepository
                 .findTopByStatusNotLikeAndBookerIdAndItemIdOrderByEndAsc(Status.REJECTED, userId, itemId);
         Comment comment = ObjectMapper.toComment(commentDto, user, item);
@@ -143,14 +152,12 @@ public class ItemServiceImpl implements ItemService {
         return ObjectMapper.toCommentDto(commentRepository.save(comment));
     }
 
-    private ItemRequest doRequests(ItemDto dto) {
-        ItemRequest requests;
+    private ItemRequest doRequest(ItemDto dto) {
+        ItemRequest request = null;
         if (dto.getRequestId() != null) {
-            requests = itemRequestRepository.findById(dto.getRequestId())
-                    .orElseThrow(() -> new NotFoundException("Запрос не найден."));
-        } else {
-            requests = null;
+            request = itemRequestRepository.findById(dto.getRequestId())
+                    .orElseThrow(() -> new NotFoundException("Запрос c id " + dto.getRequestId() + " не найден."));
         }
-        return requests;
+        return request;
     }
 }

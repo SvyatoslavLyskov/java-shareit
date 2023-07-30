@@ -1,11 +1,14 @@
 package ru.practicum.shareit.request;
 
+import lombok.experimental.FieldDefaults;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import ru.practicum.shareit.exceptions.NotFoundException;
@@ -18,27 +21,29 @@ import ru.practicum.shareit.user.UserRepository;
 import ru.practicum.shareit.user.model.User;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import static lombok.AccessLevel.PRIVATE;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+import static ru.practicum.shareit.SortType.CREATED;
 
 @ExtendWith(MockitoExtension.class)
+@FieldDefaults(level = PRIVATE)
 class ItemRequestServiceTest {
-    private static final Sort SORT = Sort.by(Sort.Direction.DESC, "created");
+    static final Sort SORT = CREATED.getSortValue();
     @Mock
-    private ItemRequestRepository requestRepository;
+    ItemRequestRepository requestRepository;
     @Mock
-    private UserRepository userRepository;
+    UserRepository userRepository;
     @Mock
-    private ItemRepository itemRepository;
+    ItemRepository itemRepository;
     @InjectMocks
     ItemRequestServiceImpl service;
-    private User requester;
-    private Item item;
-    private ItemRequest request;
+    User requester;
+    Item item;
+    ItemRequest request;
 
     @BeforeEach
     void setUp() {
@@ -106,7 +111,8 @@ class ItemRequestServiceTest {
         int from = 0;
         int size = 1;
         PageRequest pageRequest = PageRequest.of(from / size, size, SORT);
-        when(requestRepository.findAllByRequesterIdNot(userId, pageRequest)).thenReturn(List.of(request));
+        when(requestRepository.findAllByRequesterIdNot(userId, pageRequest)).thenReturn(
+                new PageImpl<>(List.of(request)));
         List<ItemRequestDtoByOwner> requestDto = service.getAllRequests(userId, from, size);
         assertNotNull(requestDto);
         assertEquals(1, requestDto.size());
@@ -118,7 +124,7 @@ class ItemRequestServiceTest {
         int from = 0;
         int size = 1;
         PageRequest pageRequest = PageRequest.of(from / size, size, SORT);
-        when(requestRepository.findAllByRequesterIdNot(userId, pageRequest)).thenReturn(Collections.emptyList());
+        when(requestRepository.findAllByRequesterIdNot(userId, pageRequest)).thenReturn(Page.empty());
         List<ItemRequestDtoByOwner> requestDto = service.getAllRequests(userId, from, size);
         assertNotNull(requestDto);
         assertTrue(requestDto.isEmpty());

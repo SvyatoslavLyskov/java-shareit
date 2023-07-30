@@ -10,12 +10,13 @@ import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import java.util.List;
 
+import static ru.practicum.shareit.item.ItemController.HEADER;
+
 @RestController
 @RequiredArgsConstructor
 @Validated
 @RequestMapping(path = "/bookings")
 public class BookingController {
-    private static final String HEADER = "X-Sharer-User-Id";
     private final BookingService bookingService;
 
     @PostMapping

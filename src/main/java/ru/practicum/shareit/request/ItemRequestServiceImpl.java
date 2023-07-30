@@ -2,11 +2,13 @@ package ru.practicum.shareit.request;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.ObjectMapper;
+import ru.practicum.shareit.SortType;
 import ru.practicum.shareit.exceptions.NotFoundException;
 import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.item.dto.ItemDto;
@@ -20,7 +22,7 @@ import ru.practicum.shareit.user.model.User;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static ru.practicum.shareit.booking.BookingServiceImpl.checkUserAvailability;
+import static ru.practicum.shareit.SortType.CREATED;
 
 @Service
 @Slf4j
@@ -44,16 +46,15 @@ public class ItemRequestServiceImpl implements ItemRequestService {
 
     @Override
     public List<ItemRequestDtoByOwner> getAllRequests(Long userId, int from, int size) {
-        Sort sort = Sort.by(Sort.Direction.DESC, "created");
+        Sort sort = CREATED.getSortValue();
         PageRequest pageRequest = PageRequest.of(from / size, size, sort);
-        List<ItemRequest> requests = requestRepository.findAllByRequesterIdNot(userId, pageRequest);
+        Page<ItemRequest> requests = requestRepository.findAllByRequesterIdNot(userId, pageRequest);
         log.info("Получены запросы пользовталея c id {}", userId);
-        return findAndMap(requests);
+        return findAndMap(requests.toList());
     }
 
-
     public List<ItemRequestDtoByOwner> findAllUsersRequestsWithReplies(Long userId) {
-        checkUserAvailability(userRepository, userId);
+        checkUserAvailability(userId);
         List<ItemRequest> requests = requestRepository.findAllByRequesterId(userId);
         log.info("Получены запросы пользовталея c id {}", userId);
         return findAndMap(requests);
@@ -61,7 +62,7 @@ public class ItemRequestServiceImpl implements ItemRequestService {
 
     @Override
     public ItemRequestDtoByOwner getRequestById(Long userId, Long requestId) {
-        checkUserAvailability(userRepository, userId);
+        checkUserAvailability(userId);
         ItemRequest request = requestRepository.findById(requestId).orElseThrow(() ->
                 new NotFoundException("Запрос не найден."));
         List<ItemDto> reply = itemRepository.findByRequestId(requestId).stream()
@@ -85,5 +86,11 @@ public class ItemRequestServiceImpl implements ItemRequestService {
                 .map(itemRequest -> ObjectMapper.toItemRequestDtoByOwner(itemRequest,
                         itemMap.getOrDefault(itemRequest.getId(), Collections.emptyList())))
                 .collect(Collectors.toList());
+    }
+
+    public void checkUserAvailability(long id) {
+        if (!userRepository.existsById(id)) {
+            throw new NotFoundException("Пользователь с запрашиваемым id не зарегистрирован.");
+        }
     }
 }
