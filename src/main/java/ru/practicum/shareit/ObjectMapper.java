@@ -8,11 +8,14 @@ import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemDtoByOwner;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.request.dto.ItemRequestDto;
+import ru.practicum.shareit.request.dto.ItemRequestDtoByOwner;
 import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.model.User;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -41,17 +44,17 @@ public class ObjectMapper {
                 item.getDescription(),
                 item.getAvailable(),
                 item.getRequest() != null ?
-                        item.getRequest().stream().map(ItemRequest::getId).collect(Collectors.toList()) : null
+                        item.getRequest().getId() : null
         );
     }
 
-    public static Item toItem(ItemDto dto, List<ItemRequest> requests) {
+    public static Item toItem(ItemDto dto, ItemRequest requests) {
         Item item = new Item();
         item.setId(dto.getId());
         item.setName(dto.getName());
         item.setDescription(dto.getDescription());
         item.setAvailable(dto.getAvailable());
-        item.setRequest(!requests.isEmpty() ? requests : null);
+        item.setRequest(requests);
         return item;
     }
 
@@ -68,7 +71,7 @@ public class ObjectMapper {
                 item.getDescription(),
                 item.getAvailable(),
                 item.getRequest() != null ?
-                        item.getRequest().stream().map(ItemRequest::getId).collect(Collectors.toList()) : null,
+                        item.getRequest().getId() : null,
                 lastBooking != null ? ObjectMapper.toBookingDto(lastBooking) : null,
                 nextBooking != null ? ObjectMapper.toBookingDto(nextBooking) : null,
                 commentDto
@@ -130,7 +133,39 @@ public class ObjectMapper {
         );
     }
 
-    public static List<BookingOutputDto> toBookingsOutputList(List<Booking> bookings) {
-        return bookings.stream().map(ObjectMapper::toBookingOutputDto).collect(Collectors.toList());
+    public static List<BookingOutputDto> toBookingsOutputList(Iterable<Booking> bookings) {
+        List<BookingOutputDto> result = new ArrayList<>();
+        for (Booking booking : bookings) {
+            result.add(toBookingOutputDto(booking));
+        }
+        return result;
+    }
+
+    public static ItemRequest toItemRequest(ItemRequestDto dto) {
+        return new ItemRequest(
+                dto.getId(),
+                dto.getDescription(),
+                dto.getRequester(),
+                dto.getCreated()
+        );
+    }
+
+    public static ItemRequestDto toItemRequestDto(ItemRequest request) {
+        return new ItemRequestDto(
+                request.getId(),
+                request.getDescription(),
+                request.getRequester(),
+                request.getCreated()
+        );
+    }
+
+    public static ItemRequestDtoByOwner toItemRequestDtoByOwner(ItemRequest request, List<ItemDto> reply) {
+        return new ItemRequestDtoByOwner(
+                request.getId(),
+                request.getDescription(),
+                request.getRequester(),
+                request.getCreated(),
+                reply
+        );
     }
 }

@@ -2,19 +2,22 @@ package ru.practicum.shareit.item;
 
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemDtoByOwner;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Min;
 import java.util.List;
 
 @RestController
+@Validated
 @RequestMapping("/items")
 @RequiredArgsConstructor
 public class ItemController {
-    private static final String HEADER = "X-Sharer-User-Id";
+    public static final String HEADER = "X-Sharer-User-Id";
     private final ItemService itemService;
 
     @PostMapping
@@ -40,8 +43,10 @@ public class ItemController {
     }
 
     @GetMapping
-    public List<ItemDtoByOwner> findAll(@RequestHeader(HEADER) Long userId) {
-        return itemService.getUserItemsById(userId);
+    public List<ItemDtoByOwner> findAll(@RequestHeader(HEADER) Long userId,
+                                        @RequestParam(defaultValue = "0", required = false) @Min(0) int from,
+                                        @RequestParam(defaultValue = "10", required = false) @Min(1) int size) {
+        return itemService.findByOwnerId(userId, from, size);
     }
 
     @GetMapping("/search")

@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 @Table(name = "requests")
 @AllArgsConstructor
 @Data
+@Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ItemRequest {
     public static final int MAX_DESCRIPTION_LENGTH = 512;
