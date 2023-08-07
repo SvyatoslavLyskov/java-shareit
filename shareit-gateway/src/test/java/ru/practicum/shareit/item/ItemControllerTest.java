@@ -23,6 +23,7 @@ class ItemControllerTest {
     private MockMvc mockMvc;
     @MockBean
     private ItemClient client;
+
     @Test
     void createItemWithEmptyName() throws Exception {
         mockMvc.perform(post(URL)

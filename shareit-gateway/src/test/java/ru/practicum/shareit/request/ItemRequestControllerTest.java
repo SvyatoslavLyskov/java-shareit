@@ -23,6 +23,7 @@ class ItemRequestControllerTest {
     private MockMvc mockMvc;
     @MockBean
     private ItemRequestClient client;
+
     @Test
     void createRequestWithoutDescription() throws Exception {
         mockMvc.perform(post(URL)
